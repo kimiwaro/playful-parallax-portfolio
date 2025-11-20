@@ -186,3 +186,4 @@ export default function CharacterEditor() {
     </div>
   );
 }
+fix: clean up CharacterEditor with toast and reduced-motion guard
