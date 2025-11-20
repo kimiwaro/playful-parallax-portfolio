@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import ParallaxLayer from "./ParallaxLayer";
+import usePrefersReducedMotion from "../hooks/usePrefersReducedMotion";
 
 export default function Hero() {
   const rootRef = useRef<HTMLDivElement | null>(null);
@@ -16,6 +17,11 @@ export default function Hero() {
     };
 
     const onScroll = () => setScrollY(window.scrollY || window.pageYOffset);
+
+    const reduced = usePrefersReducedMotion();
+    // when applying transforms or requestAnimationFrame, skip or reduce magnitude:
+    const maxTranslate = reduced ? 6 : 24; // px or percent depending on implementation
+    // use maxTranslate instead of a larger value when computing transforms
 
     const node = rootRef.current;
     node?.addEventListener("pointermove", onMove);
