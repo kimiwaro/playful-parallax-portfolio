@@ -4,9 +4,9 @@ import { ToastProvider } from "../components/Toast";
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
-  <ToastProvider>
-    <Component {...pageProps} />
-  </ToastProvider>
-);
-  
+    <ToastProvider>
+      <Component {...pageProps} />
+    </ToastProvider>
+  );
 }
+
