@@ -2,11 +2,63 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Theme variables */
 :root {
   --bg: #0f172a; /* slate-900 */
   --glass: rgba(255, 255, 255, 0.08);
   --accent: #7c3aed; /* violet-600 */
 }
 
-html, body, #__next { height: 100%; }
-body { background: var(--bg); color: white; }
+/* Layout safety: prevent horizontal scrolling from wide svgs or absolutely positioned layers */
+html, body, #__next {
+  height: 100%;
+  overflow-x: hidden;
+}
+
+/* Page base */
+body {
+  background: var(--bg);
+  color: white;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Make images and inline SVGs responsive so they never force overflow */
+img, svg {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Parallax layer helper (use .parallax-layer on background divs) */
+.parallax-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+/* Utility: keep wide content constrained inside centered containers */
+.container-constrain {
+  max-width: 1280px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
