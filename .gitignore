@@ -1,0 +1,38 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-error.log*
+.pnpm-debug.log
+
+# Next.js build
+.next/
+out/
+dist/
+
+# Logs
+logs
+*.log
+
+# dotenv
+.env
+.env.local
+.env.*.local
+
+# Editor/IDE
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# macOS
+.DS_Store
+
+# System
+Thumbs.db
+
+# Production
+build/
+.vercel/
+
+# Misc
+coverage/
