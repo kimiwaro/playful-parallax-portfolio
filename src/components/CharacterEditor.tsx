@@ -40,28 +40,34 @@ async function exportSvgToPng(svgEl: SVGSVGElement, filename = "character.png") 
         canvas.width = width;
         canvas.height = height;
         const ctx = canvas.getContext("2d");
-        if (!ctx) throw new Error("Canvas not supported");
+        if (!ctx) {
+          reject(new Error("Canvas not supported"));
+          return;
+        }
 
         // Optional: fill background to avoid transparent PNG
         ctx.fillStyle = "#0f172a";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        canvas.toBlob((blob) => {
-          if (!blob) {
-            reject(new Error("Failed to export image"));
-            return;
-          }
-          const link = document.createElement("a");
-          link.href = URL.createObjectURL(blob);
-          link.download = filename;
-          document.body.appendChild(link);
-          link.click();
-          link.remove();
-          URL.revokeObjectURL(link.href);
-          URL.revokeObjectURL(url);
-          resolve();
-        }, "image/png");
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              reject(new Error("Failed to export image"));
+              return;
+            }
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(link.href);
+            URL.revokeObjectURL(url);
+            resolve();
+          },
+          "image/png",
+        );
       } catch (err) {
         reject(err);
       }
@@ -78,7 +84,7 @@ export default function CharacterEditor() {
   const [accessory, setAccessory] = useState<"none" | "hat" | "glasses">("none");
   const [busy, setBusy] = useState(false);
 
-  const reduced = usePrefersReducedMotion(); // ✅ hook used correctly here
+  const reduced = usePrefersReducedMotion();
   const toast = useToast();
 
   const handleExport = async () => {
@@ -88,10 +94,29 @@ export default function CharacterEditor() {
       await exportSvgToPng(svgRef.current, "playful-character.png");
       toast.success("Export complete");
     } catch (err) {
+      // keep console info for debugging
+      // eslint-disable-next-line no-console
       console.error("Export failed", err);
       toast.error("Export failed. Try again in the browser.");
     } finally {
       setBusy(false);
+    }
+  };
+
+  const handleCopySvg = async () => {
+    if (!svgRef.current) return;
+    try {
+      const s = new XMLSerializer().serializeToString(svgRef.current);
+      if (!navigator.clipboard?.writeText) {
+        toast.error("Clipboard API not available");
+        return;
+      }
+      await navigator.clipboard.writeText(s);
+      toast.success("SVG copied to clipboard");
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error("Copy failed", err);
+      toast.error("Copy failed");
     }
   };
 
@@ -133,7 +158,107 @@ export default function CharacterEditor() {
       <p className="text-sm text-white/80 mt-1">Quickly compose a character and export as PNG.</p>
 
       <div className="mt-4 grid gap-4 md:grid-cols-2">
-        {/* controls omitted for brevity, same as your version */}
+        {/* Controls */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-3 flex-wrap">
+            <span className="text-sm font-medium">Head</span>
+            <div className="inline-flex gap-2">
+              <button
+                aria-pressed={head === "circle"}
+                onClick={() => setHead("circle")}
+                className={`px-3 py-1 rounded ${head === "circle" ? "bg-indigo-600 text-white" : "bg-white/6 hover:bg-white/10"}`}
+              >
+                Circle
+              </button>
+              <button
+                aria-pressed={head === "square"}
+                onClick={() => setHead("square")}
+                className={`px-3 py-1 rounded ${head === "square" ? "bg-indigo-600 text-white" : "bg-white/6 hover:bg-white/10"}`}
+              >
+                Square
+              </button>
+              <button
+                aria-pressed={head === "triangle"}
+                onClick={() => setHead("triangle")}
+                className={`px-3 py-1 rounded ${head === "triangle" ? "bg-indigo-600 text-white" : "bg-white/6 hover:bg-white/10"}`}
+              >
+                Triangle
+              </button>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <label htmlFor="head-color" className="text-sm font-medium">
+              Color
+            </label>
+            <input
+              id="head-color"
+              type="color"
+              value={color}
+              onChange={(e) => setColor(e.target.value)}
+              aria-label="Pick head color"
+              className="w-10 h-8 p-0 border-0 bg-transparent"
+            />
+            <div className="ml-2 text-sm text-white/70">{color.toUpperCase()}</div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <label htmlFor="accessory" className="text-sm font-medium">
+              Accessory
+            </label>
+            <select
+              id="accessory"
+              value={accessory}
+              onChange={(e) => setAccessory(e.target.value as any)}
+              className="px-3 py-1 rounded bg-white/6"
+              aria-label="Accessory"
+            >
+              <option value="none">None</option>
+              <option value="hat">Hat</option>
+              <option value="glasses">Glasses</option>
+            </select>
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              onClick={handleExport}
+              disabled={busy}
+              className="px-4 py-2 rounded-md bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60"
+            >
+              {busy ? "Exporting..." : "Export PNG"}
+            </button>
+
+            <button
+              onClick={handleCopySvg}
+              className="px-4 py-2 rounded-md bg-white/6 hover:bg-white/10"
+            >
+              Copy SVG
+            </button>
+
+            <button
+              onClick={() => {
+                // quick randomize for fun/demo
+                setHead((h) => {
+                  const opts: ("circle" | "square" | "triangle")[] = ["circle", "square", "triangle"];
+                  return opts[(opts.indexOf(h) + 1) % opts.length];
+                });
+                setAccessory((a) => {
+                  const opts: ("none" | "hat" | "glasses")[] = ["none", "hat", "glasses"];
+                  return opts[(opts.indexOf(a) + 1) % opts.length];
+                });
+                toast.info("Randomized character");
+              }}
+              className="px-3 py-2 rounded-md bg-white/6 hover:bg-white/10 text-sm"
+              aria-label="Randomize character"
+            >
+              Randomize
+            </button>
+          </div>
+
+          <p className="mt-2 text-xs text-white/60">Tip: use Export PNG to save for sharing or demo slides.</p>
+        </div>
+
+        {/* Preview column */}
         <div className="flex flex-col items-center">
           <div className="w-full max-w-[360px] h-[270px] rounded-lg border border-white/8 bg-[rgba(0,0,0,0.12)] flex items-center justify-center">
             <svg
@@ -166,24 +291,16 @@ export default function CharacterEditor() {
               {busy ? "Exporting..." : "Export PNG"}
             </button>
             <button
-              onClick={() => {
-                if (!svgRef.current) return;
-                const s = new XMLSerializer().serializeToString(svgRef.current);
-                navigator.clipboard?.writeText(s).then(
-                  () => toast.success("SVG copied to clipboard"),
-                  () => toast.error("Copy failed")
-                );
-              }}
+              onClick={handleCopySvg}
               className="px-4 py-2 rounded-md bg-white/6 hover:bg-white/10"
             >
               Copy SVG
             </button>
           </div>
 
-          <p className="mt-3 text-xs text-white/60">Tip: use Export PNG to save for sharing or demo slides.</p>
+          <p className="mt-3 text-xs text-white/60">Tip: export or copy the SVG to customize further.</p>
         </div>
       </div>
     </div>
   );
 }
-
