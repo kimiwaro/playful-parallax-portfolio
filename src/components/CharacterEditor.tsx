@@ -206,17 +206,18 @@ export default function CharacterEditor() {
             <label htmlFor="accessory" className="text-sm font-medium">
               Accessory
             </label>
-            <select
-              id="accessory"
-              value={accessory}
-              onChange={(e) => setAccessory(e.target.value as any)}
-              className="px-3 py-1 rounded bg-white/6"
-              aria-label="Accessory"
-            >
-              <option value="none">None</option>
-              <option value="hat">Hat</option>
-              <option value="glasses">Glasses</option>
-            </select>
+           <select
+           id="accessory"
+           value={accessory}
+           onChange={(e) => setAccessory(e.target.value as any)}
+           className="px-3 py-1 rounded bg-black text-white border border-white/20"
+           aria-label="Accessory"
+           >
+           <option value="none">None</option>
+           <option value="hat">Hat</option>
+           <option value="glasses">Glasses</option>
+           </select>
+
           </div>
 
           <div className="flex gap-2">
