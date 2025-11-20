@@ -1,6 +1,8 @@
 import React, { useRef, useState } from "react";
 import { useToast } from "./Toast";
 import usePrefersReducedMotion from "../hooks/usePrefersReducedMotion";
+import usePrefersReducedMotion from "../hooks/usePrefersReducedMotion";
+// ...
 
 /**
  * Small helper to convert an inline SVG element to a PNG and trigger download.
@@ -12,6 +14,7 @@ async function exportSvgToPng(svgEl: SVGSVGElement, filename = "character.png") 
   const blob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const img = new Image();
+  const reduced = usePrefersReducedMotion();
 
   // Use same dimensions as the SVG viewBox if present, fallback to 800x600
   const viewBox = svgEl.getAttribute("viewBox");
@@ -203,14 +206,14 @@ export default function CharacterEditor() {
             className="w-full max-w-[360px] h-[270px] rounded-lg border border-white/8 bg-[rgba(0,0,0,0.12)] flex items-center justify-center"
             aria-hidden="false"
           >
-            <svg
-              ref={svgRef}
-              viewBox="0 0 400 300"
-              width="320"
-              height="240"
-              role="img"
-              aria-label="Character preview"
-              className={`transform ${reduced ? "" : "transition-transform duration-500 ease-out"}`}
+          <svg
+          ref={svgRef}
+          viewBox="0 0 400 300"
+          width="320"
+          height="240"
+          role="img"
+          aria-label="Character preview"
+          className={`transform ${reduced ? "" : "transition-transform duration-500 ease-out"}`}
             >
               <rect width="100%" height="100%" fill="transparent" />
               <g transform="translate(0,0)">
