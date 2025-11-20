@@ -1,5 +1,5 @@
 // src/components/FooterCTA.tsx
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import ShareModal from "./ShareModal";
 
 function useCurrentSection(selector = "main > section") {
@@ -33,13 +33,12 @@ export default function FooterCTA() {
   const current = useCurrentSection();
   const [open, setOpen] = useState(false);
 
-  const shareUrl = useMemo(() => {
-    if (typeof window === "undefined") return "";
-    return window.location.href;
-  }, []);
-
+  // ✅ safer: state + effect
+  const [shareUrl, setShareUrl] = useState("");
   useEffect(() => {
-    // noop for now; reserved for accessibility tweaks
+    if (typeof window !== "undefined") {
+      setShareUrl(window.location.href);
+    }
   }, []);
 
   return (
