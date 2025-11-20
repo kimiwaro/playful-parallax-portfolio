@@ -1,6 +1,7 @@
 // src/components/ShareModal.tsx
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { qrImageUrl } from "../utils/qr";
+import { useToast } from "./Toast";
 
 type Props = {
   open: boolean;
@@ -12,11 +13,14 @@ type Props = {
 export default function ShareModal({ open, onClose, url, title = "Share" }: Props) {
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const toast = useToast();
+  const [qrSrc, setQrSrc] = useState<string>("");
 
   useEffect(() => {
     if (!open) return;
     const prevActive = document.activeElement as HTMLElement | null;
-    inputRef.current?.focus();
+    // focus the input for quick copy
+    setTimeout(() => inputRef.current?.focus(), 50);
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
@@ -27,9 +31,18 @@ export default function ShareModal({ open, onClose, url, title = "Share" }: Prop
     };
   }, [open, onClose]);
 
-  if (!open) return null;
+  useEffect(() => {
+    // Prefer a local asset (public/assets/qr-share.png) if available, otherwise fallback to external generator
+    // This keeps the modal fast and removes external dependency during demos.
+    const local = "/assets/qr-share.png";
+    // quick check: create an Image and see if it loads
+    const img = new Image();
+    img.onload = () => setQrSrc(local);
+    img.onerror = () => setQrSrc(qrImageUrl(url, 320));
+    img.src = local;
+  }, [url]);
 
-  const qrSrc = qrImageUrl(url, 320);
+  if (!open) return null;
 
   return (
     <div
@@ -74,16 +87,13 @@ export default function ShareModal({ open, onClose, url, title = "Share" }: Prop
                 value={url}
                 className="flex-1 px-3 py-2 rounded-md bg-black/20 text-white text-sm"
                 aria-label="Share URL"
+                onFocus={(e) => e.currentTarget.select()}
               />
               <button
                 onClick={() => {
                   navigator.clipboard?.writeText(url).then(
-                    () => {
-                      try { (window as any).alert("Link copied to clipboard"); } catch {}
-                    },
-                    () => {
-                      try { (window as any).alert("Copy failed"); } catch {}
-                    }
+                    () => toast.success("Link copied to clipboard"),
+                    () => toast.error("Copy failed")
                   );
                 }}
                 className="px-3 py-2 rounded-md bg-indigo-600 hover:bg-indigo-500 text-sm"
@@ -101,7 +111,9 @@ export default function ShareModal({ open, onClose, url, title = "Share" }: Prop
             <img
               src={qrSrc}
               alt="QR code for share link"
-              className="w-44 h-44 rounded-md bg-white/6"
+              className="w-44 h-44 rounded-md bg-white/6 object-cover"
+              width={176}
+              height={176}
             />
             <a
               href={url}
