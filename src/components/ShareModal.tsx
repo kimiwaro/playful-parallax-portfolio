@@ -14,33 +14,69 @@ export default function ShareModal({ open, onClose, url, title = "Share" }: Prop
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const toast = useToast();
+
   const [qrSrc, setQrSrc] = useState<string>("");
+  const [qrLoading, setQrLoading] = useState<boolean>(true);
 
   useEffect(() => {
     if (!open) return;
     const prevActive = document.activeElement as HTMLElement | null;
-    setTimeout(() => inputRef.current?.focus(), 50);
+    // small delay so focus moves after dialog becomes visible
+    const t = setTimeout(() => inputRef.current?.focus(), 50);
 
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
     document.addEventListener("keydown", onKey);
     return () => {
+      clearTimeout(t);
       document.removeEventListener("keydown", onKey);
       prevActive?.focus();
     };
   }, [open, onClose]);
 
   useEffect(() => {
-    // Try local asset first, fallback to generated QR
+    if (!open || !url) return;
+
+    // Always show a generated QR immediately to avoid a blank image
+    const generated = qrImageUrl(url, 320);
+    setQrSrc(generated);
+    setQrLoading(true);
+
+    // Probe local asset; if available prefer it
     const local = "/assets/qr-share.png";
-    const img = new Image();
-    img.onload = () => setQrSrc(local);
-    img.onerror = () => setQrSrc(qrImageUrl(url, 320));
-    img.src = local;
-  }, [url]);
+    let mounted = true;
+    const probe = new Image();
+    probe.onload = () => {
+      if (mounted) {
+        setQrSrc(local);
+        setQrLoading(false);
+      }
+    };
+    probe.onerror = () => {
+      if (mounted) {
+        // keep generated QR
+        setQrLoading(false);
+      }
+    };
+    probe.src = local;
+
+    return () => {
+      mounted = false;
+    };
+  }, [open, url]);
 
   if (!open) return null;
+
+  const handleCopy = async () => {
+    try {
+      if (!navigator.clipboard?.writeText) throw new Error("Clipboard API not available");
+      await navigator.clipboard.writeText(url);
+      toast.success("Link copied to clipboard");
+    } catch (err) {
+      toast.error("Copy failed");
+    }
+  };
 
   return (
     <div
@@ -90,12 +126,7 @@ export default function ShareModal({ open, onClose, url, title = "Share" }: Prop
                 onFocus={(e) => e.currentTarget.select()}
               />
               <button
-                onClick={() => {
-                  navigator.clipboard?.writeText(url).then(
-                    () => toast.success("Link copied to clipboard"),
-                    () => toast.error("Copy failed")
-                  );
-                }}
+                onClick={handleCopy}
                 className="px-3 py-2 rounded-md bg-indigo-600 hover:bg-indigo-500 text-sm"
               >
                 Copy
@@ -108,13 +139,21 @@ export default function ShareModal({ open, onClose, url, title = "Share" }: Prop
           </div>
 
           <div className="flex flex-col items-center">
-            <img
-              src={qrSrc}
-              alt="QR code for share link"
-              className="w-44 h-44 rounded-md bg-white/6 object-cover"
-              width={176}
-              height={176}
-            />
+            <div
+              className="w-44 h-44 rounded-md bg-white/6 flex items-center justify-center overflow-hidden"
+              aria-busy={qrLoading}
+            >
+              <img
+                src={qrSrc}
+                alt="QR code for share link"
+                className="w-full h-full object-cover"
+                width={176}
+                height={176}
+                onLoad={() => setQrLoading(false)}
+                onError={() => setQrLoading(false)}
+              />
+            </div>
+
             <a
               href={url}
               target="_blank"
@@ -129,5 +168,3 @@ export default function ShareModal({ open, onClose, url, title = "Share" }: Prop
     </div>
   );
 }
-
-
