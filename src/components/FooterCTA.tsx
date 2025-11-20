@@ -34,27 +34,25 @@ export default function FooterCTA() {
   const [open, setOpen] = useState(false);
 
   const shareUrl = useMemo(() => {
-    // prefer canonical location, fall back to current location
     if (typeof window === "undefined") return "";
     return window.location.href;
   }, []);
 
   useEffect(() => {
-    // accessibility: hide if no sections found (safety)
-    // noop
+    // noop for now; reserved for accessibility tweaks
   }, []);
 
   return (
     <>
       <div className="fixed left-4 right-4 bottom-6 z-40 md:left-auto md:right-6 md:bottom-6">
-        <div className="mx-auto max-w-3xl flex items-center justify-between gap-4 rounded-full bg-black/40 border border-white/8 py-2 px-3 backdrop-blur-md">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold shadow-sm">
+        <div className="mx-auto max-w-3xl flex items-center justify-between gap-3 rounded-full bg-black/40 border border-white/8 py-2 px-3 backdrop-blur-md">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 flex-shrink-0 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold shadow-sm">
               ⇧
             </div>
-            <div>
-              <div className="text-sm font-semibold">{current ?? "Playful Parallax"}</div>
-              <div className="text-xs text-white/70">Ready to share</div>
+            <div className="min-w-0">
+              <div className="text-sm font-semibold truncate">{current ?? "Playful Parallax"}</div>
+              <div className="text-xs text-white/70 truncate">Ready to share</div>
             </div>
           </div>
 
@@ -62,12 +60,13 @@ export default function FooterCTA() {
             <button
               onClick={() => setOpen(true)}
               className="px-3 py-1 rounded-md bg-indigo-600 hover:bg-indigo-500 text-sm"
+              aria-haspopup="dialog"
             >
               Share
             </button>
             <a
               href="/assets/hero-layer-1.svg"
-              className="px-3 py-1 rounded-md bg-white/6 hover:bg-white/10 text-sm"
+              className="hidden sm:inline-flex px-3 py-1 rounded-md bg-white/6 hover:bg-white/10 text-sm"
             >
               View art
             </a>
