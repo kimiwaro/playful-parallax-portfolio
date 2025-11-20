@@ -77,3 +77,4 @@ export default function FooterCTA() {
     </>
   );
 }
+fix: guard window.location with useEffect in FooterCTA
