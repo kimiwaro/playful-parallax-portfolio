@@ -1,7 +1,7 @@
 import React, { useRef, useState } from "react";
 import { useToast } from "./Toast";
 import usePrefersReducedMotion from "../hooks/usePrefersReducedMotion";
-import usePrefersReducedMotion from "../hooks/usePrefersReducedMotion";
+
 // ...
 
 /**
