@@ -19,8 +19,8 @@ export default function ShareModal({ open, onClose, url, title = "Share" }: Prop
   useEffect(() => {
     if (!open) return;
     const prevActive = document.activeElement as HTMLElement | null;
-    // focus the input for quick copy
     setTimeout(() => inputRef.current?.focus(), 50);
+
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
@@ -32,10 +32,8 @@ export default function ShareModal({ open, onClose, url, title = "Share" }: Prop
   }, [open, onClose]);
 
   useEffect(() => {
-    // Prefer a local asset (public/assets/qr-share.png) if available, otherwise fallback to external generator
-    // This keeps the modal fast and removes external dependency during demos.
+    // Try local asset first, fallback to generated QR
     const local = "/assets/qr-share.png";
-    // quick check: create an Image and see if it loads
     const img = new Image();
     img.onload = () => setQrSrc(local);
     img.onerror = () => setQrSrc(qrImageUrl(url, 320));
@@ -65,7 +63,9 @@ export default function ShareModal({ open, onClose, url, title = "Share" }: Prop
             <h2 id="share-modal-title" className="text-lg font-semibold text-white">
               {title}
             </h2>
-            <p className="text-sm text-white/80 mt-1">Share this demo with others — scan or copy the link.</p>
+            <p className="text-sm text-white/80 mt-1">
+              Share this demo with others — scan or copy the link.
+            </p>
           </div>
 
           <button
