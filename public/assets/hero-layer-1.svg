@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+  <g transform="translate(120,220)">
+    <rect x="0" y="0" width="450" height="320" rx="40" fill="#7c3aed"/>
+    <circle cx="80" cy="80" r="52" fill="#fff" opacity="0.14"/>
+    <circle cx="360" cy="60" r="28" fill="#06B6D4" opacity="0.9"/>
+    <path d="M30 260 Q120 180 240 260 T450 260 L450 320 L0 320 Z" fill="#6d28d9" opacity="0.98"/>
+  </g>
+  <g transform="translate(900,260)" opacity="0.98">
+    <circle cx="120" cy="80" r="80" fill="#fff" opacity="0.06"/>
+    <rect x="40" y="140" width="200" height="12" rx="6" fill="#fff" opacity="0.08"/>
+  </g>
+</svg>
