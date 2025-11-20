@@ -1,4 +1,6 @@
 import React, { useRef, useState } from "react";
+import { useToast } from "./Toast";
+import usePrefersReducedMotion from "../hooks/usePrefersReducedMotion";
 
 /**
  * Small helper to convert an inline SVG element to a PNG and trigger download.
@@ -75,16 +77,18 @@ export default function CharacterEditor() {
   const [accessory, setAccessory] = useState<"none" | "hat" | "glasses">("none");
   const [busy, setBusy] = useState(false);
 
-  const accessible = typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const reduced = usePrefersReducedMotion();
+  const toast = useToast();
 
   const handleExport = async () => {
     if (!svgRef.current) return;
     setBusy(true);
     try {
       await exportSvgToPng(svgRef.current, "playful-character.png");
+      toast.success("Export complete");
     } catch (err) {
       console.error("Export failed", err);
-      alert("Export failed. Try again in the browser.");
+      toast.error("Export failed. Try again in the browser.");
     } finally {
       setBusy(false);
     }
@@ -206,7 +210,7 @@ export default function CharacterEditor() {
               height="240"
               role="img"
               aria-label="Character preview"
-              className={`transform ${accessible ? "" : "transition-transform duration-500 ease-out"}`}
+              className={`transform ${reduced ? "" : "transition-transform duration-500 ease-out"}`}
             >
               <rect width="100%" height="100%" fill="transparent" />
               <g transform="translate(0,0)">
@@ -235,8 +239,8 @@ export default function CharacterEditor() {
                 if (!svgRef.current) return;
                 const s = new XMLSerializer().serializeToString(svgRef.current);
                 navigator.clipboard?.writeText(s).then(
-                  () => alert("SVG copied to clipboard"),
-                  () => alert("Copy failed")
+                  () => toast.success("SVG copied to clipboard"),
+                  () => toast.error("Copy failed")
                 );
               }}
               className="px-4 py-2 rounded-md bg-white/6 hover:bg-white/10"
