@@ -1,3 +1,4 @@
+// src/components/Hero.tsx
 import React, { useEffect, useRef, useState } from "react";
 import ParallaxLayer from "./ParallaxLayer";
 import usePrefersReducedMotion from "../hooks/usePrefersReducedMotion";
@@ -6,6 +7,10 @@ export default function Hero() {
   const rootRef = useRef<HTMLDivElement | null>(null);
   const [pointer, setPointer] = useState({ x: 0, y: 0 });
   const [scrollY, setScrollY] = useState(0);
+
+  // ✅ hook at top level
+  const reduced = usePrefersReducedMotion();
+  const maxTranslate = reduced ? 6 : 24; // smaller amplitude if reduced motion
 
   useEffect(() => {
     const onMove = (e: PointerEvent) => {
@@ -18,11 +23,6 @@ export default function Hero() {
 
     const onScroll = () => setScrollY(window.scrollY || window.pageYOffset);
 
-    const reduced = usePrefersReducedMotion();
-    // when applying transforms or requestAnimationFrame, skip or reduce magnitude:
-    const maxTranslate = reduced ? 6 : 24; // px or percent depending on implementation
-    // use maxTranslate instead of a larger value when computing transforms
-
     const node = rootRef.current;
     node?.addEventListener("pointermove", onMove);
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -33,10 +33,10 @@ export default function Hero() {
     };
   }, []);
 
-  // compute transforms for three depth layers
+  // ✅ use maxTranslate in transforms
   const layerTransform = (depth: number) => {
-    const dx = pointer.x * (1 - depth) * 18; // pointer parallax
-    const dy = pointer.y * (1 - depth) * 12 + scrollY * depth * 0.02; // include scroll
+    const dx = pointer.x * (1 - depth) * maxTranslate;
+    const dy = pointer.y * (1 - depth) * (maxTranslate * 0.66) + scrollY * depth * 0.02;
     return `translate3d(${dx}px, ${dy}px, 0)`;
   };
 
